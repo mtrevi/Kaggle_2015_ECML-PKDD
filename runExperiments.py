@@ -84,14 +84,15 @@ print '\t Reduced routes of %d train trip (%d skip because of too few data point
 # Run NN and prediction of destination
 # TODO : instead of comparing with each individual train_route, group them before by ending point
 # TODO : when the points are going forther that the last destination, just compute a regression line and set a point not too far (estimate the missing points ~10-20% and their total distance)
+print 'Parsing test trips...'
 for ttestId in testIds:
     ttest = trips[ttestId]
     candidates = {} # score -> ttrain
     for ttrainId in trainIds:
         ttrain = trips[ttrainId]
         d = decreasingDistanceSim(ttest.route, ttrain.route, 0.5)
-        print ttest.printRoute()
-        print ttrain.printRoute()
+        # ttest.printRoute()
+        # ttrain.printRoute()
         print ttest.id, ttrain.id, d
         break
     break
