@@ -22,6 +22,7 @@ class TripObj:
         self.dayType = self.convertChar2Int(b[6], 'day_type') # A:1, B:2, C:3
         self.missingData = bool(b[7])
         self.route = self.getListOfPoints(b[8])
+        self.destination = self.route[-1]
 
     # ---------------- 
     # Loading Fields
