@@ -13,7 +13,7 @@ from GPSPoint import *
 class TripObj:
 
     def __init__(self, b, sep=','):
-        self.id = long(b[0])
+        self.id = b[0]
         self.callType = self.convertChar2Int(b[1], 'call_type') # A:1, B:2, C:3
         self.originCall = self.parsingInt(b[2])
         self.originStandId = self.parsingInt(b[3]) # refers to meta

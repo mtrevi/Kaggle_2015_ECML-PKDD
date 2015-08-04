@@ -19,9 +19,10 @@ from src.matching.TripSimilarity import *
 from src.matching.DistanceMetrics import *
 
 parser = OptionParser()
-parser.add_option( '--train', dest='trainFile', default='data/train.1k.csv')
+parser.add_option( '--train', dest='trainFile', default='data/train.csv')
 parser.add_option( '--test', dest='testFile', default='data/test.csv')
-parser.add_option( '--bbox', dest='bboxFile', default='data/train.1k.bbox.p')
+parser.add_option( '--bbox', dest='bboxFile', default='data/train.bbox.p')
+parser.add_option( '--out', dest='outFile', default='data/test.pred.csv')
 parser.add_option( '--split', dest='split', default=0.75)
 parser.add_option( '-d', action="store_true", dest="devel")
 
@@ -31,6 +32,7 @@ parser.add_option( '-d', action="store_true", dest="devel")
 TRAINFILE = options.trainFile
 TESTFILE = options.testFile
 BBOXFile = options.bboxFile
+OUTFILE = options.outFile
 SPLIT = float(options.split)
 DEVEL = options.devel
 MAX_DIST_TOLERATE = 5
@@ -73,14 +75,33 @@ else:
 
 # ---------------- 
 # Split into train and test set
-print >> sys.stderr, 'Splitting into train and test set'
-trainSize = int( SPLIT*len(trips) )
-shuffleIds = trips.keys()
-random.shuffle(shuffleIds)
-trainIds = shuffleIds[:trainSize]
-testIds = shuffleIds[trainSize:]
-print >> sys.stderr, '\t gotta %d train trips, %d test trips (over %d total trips)' \
-%(len(trainIds), len(testIds), len(trips))
+if DEVEL:
+    print >> sys.stderr, 'Splitting into train and test set'
+    trainSize = int( SPLIT*len(trips) )
+    shuffleIds = trips.keys()
+    random.shuffle(shuffleIds)
+    trainIds = shuffleIds[:trainSize]
+    testIds = shuffleIds[trainSize:]
+    print >> sys.stderr, '\t gotta %d train trips, %d test trips (over %d total trips)' \
+    %(len(trainIds), len(testIds), len(trips))
+else:
+    trainIds = trips.keys()
+    testIds = []
+    errCnt = 0
+    print >> sys.stderr, 'Loading test set from %s' %TESTFILE
+    with open(TESTFILE, 'rb') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            try:
+                trip = TripObj(row)
+                trips[trip.id] = trip
+                testIds.append(trip.id)
+            except Exception, err:
+                if errCnt > 0:
+                    sys.stderr.write('ERROR: %s (%d loaded)\n' % (str(err),len(testIds)) )
+                errCnt += 1
+    print >> sys.stderr, '\t loaded %d tests trips (%d total, %d errors)' \
+    %(len(testIds),len(trips),errCnt-1)
 
 
 # ---------------- 
@@ -99,8 +120,8 @@ if DEVEL:
         locDataKeep = int(round(KEEP*locDataSize))
         tt.route = tt.route[:locDataKeep]
         # print '\t from %d data points, we keep %d points' %(locDataSize, len(tt.route))
-print '\t Reduced routes of %d test trips (%d skip because of too few data points)' \
-%(len(testIds)-skipTrips, skipTrips)
+    print '\t Reduced routes of %d test trips (%d skip because of too few data points)' \
+    %(len(testIds)-skipTrips, skipTrips)
 
 
 # ---------------- 
@@ -108,15 +129,16 @@ print '\t Reduced routes of %d test trips (%d skip because of too few data point
 # TODO : instead of comparing with each individual train_route, group them before by ending point
 # TODO : when the points are going forther that the last destination, just compute a regression line and set a point not too far (estimate the missing points ~10-20% and their total distance)
 stTot = time.time()
-print 'Parsing test trips...'
+print >> sys.stderr, 'Parsing test trips...'
 testError = []
 n = 0
 noTESTS = len(testIds)
+outResults = open( OUTFILE, 'w+' )
 for ttestId in testIds:
     st = time.time()
     ttest = trips[ttestId]
     n += 1
-    print '[%d] Id:' %n, ttest.id,
+    print >> sys.stderr, '[%s] Id:' %n, ttest.id,
     # Find BBox and get only routes that end in that BBox
     area, lat, lng = findDestinationBBox(ttest, tolerance=True)
     trainCandidatesIds = BBox.getCandidatesIds(area, lat, lng)
@@ -140,34 +162,45 @@ for ttestId in testIds:
     # if no candidates
     if len(candidates) == 0:
         'TODO'
-        fakePrediction = ttest.route[-1]
-        gtErr = haversineDist(ttest.destination, fakePrediction)
-        testError.append(gtErr)
-        print '\t curError: %f totError: %f \t(%d/%d trainCand) ~%.2fs %s' \
-        %(gtErr, np.mean(testError),len(candidates),len(trainCandidatesIds),time.time()-st,'NO CANDIDATES')
-        continue
-    # get smallest scores
-    gtErr = haversineDist(ttest.destination, candidates[sorted(candidates)[0]][0].destination)
-    testError.append(gtErr)
-    # print stats
-    topn = 0
-    for score in sorted(candidates):
+        candDest = ttest.route[-1]
+        if DEVEL:
+            gtErr = haversineDist(ttest.destination, candDest)
+            testError.append(gtErr)
+            print >> sys.stderr, '\t curError: %f totError: %f \t(%d/%d trainCand) ~%.2fs %s' \
+            %(gtErr, np.mean(testError),len(candidates),len(trainCandidatesIds),time.time()-st,'NO CANDIDATES')
+            continue
+    else:
+        # get smallest scores
+        candDest = candidates[sorted(candidates)[0]][0].destination
+        if DEVEL:
+            gtErr = haversineDist(ttest.destination, candDest)
+            testError.append(gtErr)
+    if DEVEL:
+        # print stats
+        topn = 0
+        for score in sorted(candidates):
+            #
+            gtErr = haversineDist(ttest.destination, candidates[score][0].destination)
+            if topn > 0:
+                print >> sys.stderr, "score: %f, %s, finalDist: %f" \
+                %(score, candidates[score][1].serialize(), gtErr)
+                topn -= 1
+            if topn <= 0:
+                break
+        # print stats
+        print >> sys.stderr, '\t curError: %f totError: %f \t(%d/%d trainCand) ~%.2fs' \
+        %(gtErr, np.mean(testError),len(candidates),len(trainCandidatesIds),time.time()-st)
         #
-        gtErr = haversineDist(ttest.destination, candidates[score][0].destination)
-        if topn > 0:
-            print "score: %f, %s, finalDist: %f" \
-            %(score, candidates[score][1].serialize(), gtErr)
-            topn -= 1
-        if topn <= 0:
+        if n >= noTESTS:
             break
-    # print stats
-    print '\t curError: %f totError: %f \t(%d/%d trainCand) ~%.2fs' \
-    %(gtErr, np.mean(testError),len(candidates),len(trainCandidatesIds),time.time()-st)
-    #
-    if n >= noTESTS:
-        break
-print 'Tested %d trips, %d with estimation (error: %f) and %d missed \t~%.2fs' \
-%(noTESTS, len(testError), np.mean(testError), noTESTS-len(testError), time.time()-stTot)
+    else:
+        outResults.write('"%s",%f,%f\n' %(ttest.id, candDest.lat, candDest.lng))
+        print >> sys.stderr, '(%f,%f)' %(candDest.lat, candDest.lng)
+        outResults.flush()
+if DEVEL:
+    print >> sys.stderr, 'Tested %d trips, %d with estimation (error: %f) and %d missed \t~%.2fs' \
+    %(noTESTS, len(testError), np.mean(testError), noTESTS-len(testError), time.time()-stTot)
+outResults.close()
 
 # ---------------- 
 # Evaluate
