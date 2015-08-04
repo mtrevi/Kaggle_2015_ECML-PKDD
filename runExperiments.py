@@ -14,6 +14,7 @@ import cPickle as pickle
 from optparse import OptionParser
 # custom dependences
 from src.objects.TripObj import *
+from src.objects.GPSPoint import *
 from src.bbox.BBoxObj import *
 from src.matching.TripSimilarity import *
 from src.matching.DistanceMetrics import *
@@ -124,6 +125,90 @@ if DEVEL:
     %(len(testIds)-skipTrips, skipTrips)
 
 
+
+
+# ---------------- 
+# Run NN and prediction of destination
+def predictDestination(n, ttestId):
+    st = time.time()
+    ttest = trips[ttestId]
+    # with lock():
+    # print >> sys.stderr, '[%s] Id:' %n, ttest.id, 
+    # Find BBox and get only routes that end in that BBox
+    area, lat, lng = findDestinationBBox(ttest, tolerance=True)
+    trainCandidatesIds = BBox.getCandidatesIds(area, lat, lng)
+    #
+    candidates = {} # score -> ttrain
+    for ttrainId in trainCandidatesIds:
+        ttrain = trips[ttrainId]
+        C = slopeDistanceSim(ttest.route, ttrain.route, 0.5)
+        noCommP = float(C.noPj)/C.noPi
+        if C.wrongDirection > .4 or C.commPoints < .1 or C.slope >= 0:
+            continue
+        # if trainTrip.destination is too far from last point of testTrip, skip it
+        candDist = haversineDist(ttest.route[-1], ttrain.destination)
+        if candDist > MAX_DIST_TOLERATE:
+            continue
+        # save candidate
+        candidates[C.avgMagnitude] = [ttrain, C]
+    # if no candidates
+    if len(candidates) == 0:
+        candDest = ttest.route[-1]
+    else:
+        candDest = candidates[sorted(candidates)[0]][0].destination
+    # print stats
+    if DEVEL:
+        gtErr = haversineDist(ttest.destination, candDest)
+        print >> sys.stderr, '[%s] Id:%s \t curError: %f \t(%d/%d trainCand) ~%.2fs' \
+        %(n,ttest.id,gtErr,len(candidates),len(trainCandidatesIds),time.time()-st)
+    else:
+        print >> sys.stderr, '[%s] Id:%s \t candDest: (%f,%f)' \
+        %(n,ttest.id,candDest.lat,candDest.lng)
+    #
+    res = '"%s",%f,%f' %(ttest.id,candDest.lat,candDest.lng)
+    return res
+
+# Parallel Settings
+# https://pythonhosted.org/joblib/parallel.html
+# http://glowingpython.blogspot.co.uk/2014/05/code-parallelization-with-joblib.html
+from joblib import Parallel, delayed
+import multiprocessing
+NCPU = multiprocessing.cpu_count()-2
+# Main Loop
+stTot = time.time()
+print >> sys.stderr, 'Parsing test trips...'
+testError = []
+outResults = open( OUTFILE, 'w+' )
+#
+parallelizer = Parallel(n_jobs=NCPU)
+tasks_iterator = ( delayed(predictDestination)(i,testIds[i]) for i in range(0,18) )
+allPred = parallelizer( tasks_iterator )
+for line in allPred:
+    outResults.write('%s\n' %line.strip())
+    if DEVEL:
+        b = line.split(',')
+        tId = b[0].replace('"','')
+        lat = float(b[1])
+        lng = float(b[2])
+        predDest = GPSPoint([lat,lng])
+        gtErr = haversineDist(trips[tId].destination, predDest)
+        testError.append(gtErr)
+# print allPred
+if DEVEL:
+    print >> sys.stderr, 'avgError: %f' %np.mean(testError)
+print >> sys.stderr, 'Computational Time ~%.2f seconds' %(time.time()-stTot)
+outResults.flush()
+outResults.close()
+
+
+
+
+
+
+
+
+
+sys.exit()
 # ---------------- 
 # Run NN and prediction of destination
 # TODO : instead of comparing with each individual train_route, group them before by ending point
@@ -201,6 +286,3 @@ if DEVEL:
     print >> sys.stderr, 'Tested %d trips, %d with estimation (error: %f) and %d missed \t~%.2fs' \
     %(noTESTS, len(testError), np.mean(testError), noTESTS-len(testError), time.time()-stTot)
 outResults.close()
-
-# ---------------- 
-# Evaluate
