@@ -14,9 +14,10 @@ from ..objects.GPSPoint import *
 from ..objects.CandidateObj import *
 
 
-""" Given a point pi find closest point in route2
+""" Given a point pi find closest point in route2.
+    From this the comparison with the test route will begin.
 """
-def findClosestPoint(pi, route2, distFunc='haversine'):
+def findClosestPoint(pi, route2, distFunc):
     minDist = 9999
     for j in range(0,len(route2)):
         pj = route2[j]
@@ -27,14 +28,14 @@ def findClosestPoint(pi, route2, distFunc='haversine'):
     return info[0], info[1], minDist
 
 
-''' TODO : rewrite '''
-""" Given two trips, find the Points of Decreasing Distance. This are the point p_{i} (\in t1) and p_{j} (\in t2) for which the distance among them is lower than the distance among the previous pair of points (p_{i-1},p_{j-1}) which distance is lower than the ones among the previour pair of points (p_{i-2},p_{j-2}).
+''' TODO : rewrite description '''
+""" Given two trips, find the Points of Decreasing Distance. This are the points p_{i} (\in t1) and p_{j} (\in t2) for which the distance among them is lower than the distance among the previous pair of points (p_{i-1},p_{j-1}) which distance is lower than the ones among the previour pair of points (p_{i-2},p_{j-2}).
     @route1: first trip (usually the complete one ~training)
     @route2: second trip (usually the incomplete one ~testing)
     @MAX_VAR: maximum variance in km
     @output: pair of point [pi, pj]
 """
-def findOverlapingPath(route1, route2, MAX_VAR=.5, distFunc='haversine'):
+def findOverlapingPath(route1, route2, MAX_VAR, distFunc, MAGNITUDE):
     distPP = []
     wrongDirection = 0
     higherDistance = 0
@@ -54,11 +55,19 @@ def findOverlapingPath(route1, route2, MAX_VAR=.5, distFunc='haversine'):
     # compute avg magniture of last two distances
     avgMagnitude = 0.0
     if len(distPP) > 2:
-        avgMagnitude = np.mean( [distPP[-1][4],distPP[-2][4],distPP[-3][4]] )
+        if MAGNITUDE == 2:
+            avgMagnitude = np.mean( [distPP[-1][4],distPP[-2][4]] )
+        elif MAGNITUDE == 3:
+            avgMagnitude = np.mean( [distPP[-1][4],distPP[-2][4],distPP[-3][4]] )
+        elif MAGNITUDE == 4:
+            avgMagnitude = np.mean( [distPP[-1][4],distPP[-2][4],distPP[-3][4],distPP[-4][4]] )
+        elif MAGNITUDE >= 5:
+            avgMagnitude = np.mean( [distPP[-1][4],distPP[-2][4],distPP[-3][4],distPP[-4][4],distPP[-5][4]] )
     # 
     return distPP, wrongDirection, higherDistance, avgMagnitude
 
-
+""" 
+"""
 def getCommPoints(distPP):
     prevJ = -1
     diffJ = []
@@ -85,8 +94,8 @@ def getCommPoints(distPP):
     @N_POINTS: points in which compute the average distance of the trips (last N points of t2)
     @output: similarity (average distance of the last )
 """
-def slopeDistanceSim(route1, route2, MAX_VAR=.5, distFunc='haversine'):
-    distPP, wrongDirection, higherDistance, avgMagnitude = findOverlapingPath(route1, route2, MAX_VAR, distFunc)
+def slopeDistanceSim(route1, route2, MAX_VAR=.5, MAGNITUDE=3, distFunc='haversine'):
+    distPP, wrongDirection, higherDistance, avgMagnitude = findOverlapingPath(route1, route2, MAX_VAR, distFunc, MAGNITUDE)
     routeSim = 0.0
     newCandidate = CandidateObj()
     if higherDistance > 0:

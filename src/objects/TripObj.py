@@ -22,7 +22,10 @@ class TripObj:
         self.dayType = self.convertChar2Int(b[6], 'day_type') # A:1, B:2, C:3
         self.missingData = bool(b[7])
         self.route = self.getListOfPoints(b[8])
-        self.destination = self.route[-1]
+        if len(self.route) > 0:
+            self.destination = self.route[-1]
+        else:
+            self.destination = None
 
     # ---------------- 
     # Loading Fields
@@ -48,7 +51,7 @@ class TripObj:
         ll = list(literal_eval(string.strip()))
         l_out = []
         for val in ll:
-            l_out.append( GPSPoint(val) )
+            l_out.append( GPSPoint(val,order='lnglat') )
         return l_out
 
     # ---------------- 
