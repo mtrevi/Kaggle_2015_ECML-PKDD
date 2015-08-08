@@ -128,6 +128,10 @@ else:
 if DEVEL:
     print >> sys.stderr, 'Splitting into train and test set'
     trainSize = int( SPLIT*len(trips) )
+    # check size and fix if too big
+    if len(trips)-trainSize > 500:
+        trainSize = len(trips)-500
+        print >> sys.stderr, '\t limited test size as 500'
     shuffleIds = trips.keys()
     random.shuffle(shuffleIds)
     trainIds = shuffleIds[:trainSize]
@@ -182,8 +186,6 @@ def predictDestination(n, ttestId):
     st = time.time()
     ttest = trips[ttestId]
     method = 'matching'
-    # with lock():
-    # print >> sys.stderr, '[%s] Id:' %n, ttest.id, 
     # Find BBox and get only routes that end in that BBox
     area, lat, lng = findDestinationBBox(ttest, tolerance=True)
     trainCandidatesIds = BBox.getCandidatesIds(area, lat, lng)
@@ -198,18 +200,20 @@ def predictDestination(n, ttestId):
     if len(ttest.route) == 1 and airport_first_d < MAX_AIRPORT_DIST:
         candDest = portoCenter
         method = 'fromAIRPORT'
-    elif airport_last_d < MAX_AIRPORT_DIST and airport_first_d > airport_last_d:
+    elif airport_last_d <= MAX_AIRPORT_DIST and airport_first_d > airport_last_d:
         candDest = airport
         method = 'toAIRPORT'
-    elif portoCampanha_last_d < MAX_AIRPORT_DIST and portoCampanha_first_d > portoCampanha_last_d:
+    elif portoCampanha_last_d <= (MAX_AIRPORT_DIST-1) and portoCampanha_first_d > portoCampanha_last_d:
         candDest = portoCampanha
         method = 'toPORTOCAMPANHA'
     # if cab forgot to turn off the GPS and it's coming back: recommend first location
     if len(ttest.route) > 4:
+        mid_point = ttest.route[len(ttest.route)/2]
+        d_mid_last0 = getGPSDistance(mid_point,ttest.route[-1])
         d_0_last0 = getGPSDistance(ttest.route[0],ttest.route[-1])
         d_0_last1 = getGPSDistance(ttest.route[0],ttest.route[-2])
         d_0_last2 = getGPSDistance(ttest.route[0],ttest.route[-3])
-        if d_0_last0 < d_0_last1 and d_0_last0 < d_0_last2 and d_0_last0 < MAX_LOOP_DIST:
+        if d_0_last0 <= d_0_last1 and d_0_last0 <= d_0_last2 and d_0_last0 <= MAX_LOOP_DIST and d_0_last0 < d_mid_last0:
             candDest = ttest.route[0]
             method = 'LOOP'
     #
@@ -228,6 +232,19 @@ def predictDestination(n, ttestId):
             # save candidate
             candidates[C.avgMagnitude] = [ttrain, C]
     # if no candidates
+    if len(candidates) < TOPN:
+        get_candidats_with_BBox()
+
+
+
+
+
+
+
+        if candDest is None:
+            candDest = ttest.route[-1]
+            method = 'lastPOINT'
+    # if (again) no candidates
     if len(candidates) == 0:
         if candDest is None:
             candDest = ttest.route[-1]
@@ -260,12 +277,11 @@ def predictDestination(n, ttestId):
         selectedCandId = min(distancesMean.iteritems(), key=operator.itemgetter(1))[0]
         candDest = trips[selectedCandId].destination
         method = 'matching+MEDOID'
-        # pick the first ranked
-        # candDest = candidates[sorted(candidates)[0]][0].destination
+    #
     # print stats
     if DEVEL:
         gtErr = getGPSDistance(ttest.destination, candDest)
-        print >> sys.stderr, '[%s] Id:%s \t curError: %f (%d/%d trainCand)\t method: %s\t ~%.2fs' \
+        print >> sys.stderr, '[%s] Id:%s \t curError: %f (%d/%d trainCand) method: %s\t ~%.2fs' \
         %(n,ttest.id,gtErr,len(candidates),len(trainCandidatesIds),method,time.time()-st)
     else:
         print >> sys.stderr, '[%s] Id:%s \t candDest: (%f,%f)\t method: %s' \
