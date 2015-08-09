@@ -395,7 +395,7 @@ for MAX_AIRPORT_DIST in l_MAX_AIRPORT_DIST:
                                         candidates = {} # score -> ttrain
                                         for ttrainId in trainCandidatesIds:
                                             ttrain = trips[ttrainId]
-                                            C = slopeDistanceSim(ttest.route, ttrain.route, MAX_VARIANCE)
+                                            C = slopeDistanceSim(ttest.route, ttrain.route, MAX_VARIANCE, MAGNITUDE)
                                             noCommP = float(C.noPj)/C.noPi
                                             if C.wrongDirection > .4 or C.commPoints < .1 or C.slope >= 0:
                                                 continue
