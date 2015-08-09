@@ -67,6 +67,9 @@ l_MAX_VARIANCE = [float(i) for i in options.maxVariance.strip().split(',')]
 l_LAST_CELLS = [int(i) for i in options.lastCells.strip().split(',')]
 l_TOPN = [int(i) for i in options.topN.strip().split(',')]
 l_MAGNITUDE = [int(i) for i in options.magnitude.strip().split(',')]
+# check last cell
+if len(l_LAST_CELLS) == 1:
+    LAST_CELLS = int(l_LAST_CELLS[0])
 #
 # Edge Cases
 airport = GPSPoint([41.237, -8.670]) #GPSPoint([41.242390, -8.678595])
@@ -134,11 +137,11 @@ else:
 
 # ---------------- 
 # Build (or load if already built) the GRID
-if os.path.isfile(GRIDFile):
+if os.path.isfile(GRIDFile) and LAST_CELLS > 0:
     print >> sys.stderr, 'Loading Grid Data from %s' %GRIDFile
     Grid = pickle.load( open(GRIDFile,"rb") )
     print >> sys.stderr, '\t loaded %d cells' %Grid.noCells()
-else:
+elif LAST_CELLS > 0:
     print >> sys.stderr, 'Computing Grid Data'
     Grid = GridObj()
     Grid.loadTrainRoutes(trips)
@@ -146,6 +149,8 @@ else:
     print >> sys.stderr, '\t saving Grid Data to %s' %GRIDFile
     pickle.dump( Grid, open(GRIDFile,"wb") )
     print >> sys.stderr, '\t done.'
+else:
+    print >> sys.stderr, 'Skipping Grid Data Loader'
 
 
 # ---------------- 
