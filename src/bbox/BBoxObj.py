@@ -79,9 +79,9 @@ class BBoxObj:
 # Independent Functions
 # ---------------------
 
-def findDestinationBBox(trip, tolerance=True):
-    latTol = 0.01
-    lngTol = 0.01
+def findDestinationBBox(trip, tolerance=0.01):
+    latTol = tolerance
+    lngTol = tolerance
     lastP = trip.destination
     lat = lastP.lat
     lng = lastP.lng
