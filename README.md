@@ -69,7 +69,7 @@ When a list is provided all the combinations among the values are tested. This t
 
 <!--  -->
 ### Run Prediction within the Train Set
-The framework embeds also a way to evaluate the results using only the training set, following the standard approach of splitting the data into training and testing set. However, since it is not known how the real test set has been created (how many GPS points are removed? how long are the trips? how many edge cases are included? etc.) the framework picks a random subset of the data and remove from each trip the last `N` GPS points, where `N` may vary between 30% and 10% of the total number of GPS points, and then it saves the destination as a ground truth. All the rest of the data 70%-90% is the final training set.
+The framework embeds also a way to evaluate the results using only the training set, following the standard approach of splitting the data into training and testing set. However, since it is not known how the real test set has been created (how many GPS points are removed? how long are the trips? how many edge cases are included? etc.) the framework picks a random subset of the data and remove from each trip the last `N` GPS points, where `N` may vary between 30% and 10% of the total number of GPS points, and then it saves the destination as a ground truth. All the rest of the data (70%-90%) is considered as the final training set.
 
 In order to evaluate the train set, the following parameter need to be specify when calling the framework:
 - `-d` : specifies that the run mode is 'devel', splitting the data into training and testing set and increasing the information plotted in the standard output/error.
@@ -109,7 +109,10 @@ test-pred.mt.mad2.0_mdt1.5_mld2.0_mv0.5_bbt0.05_lc0_topn4_m5.csv
 
 <!--  -->
 ## How did I Tackle the Problem 
+I am going to try to explain in a simple manner how did I face the challenge, trying to make all the steps understandable.
+
 ### The Framework Explained in Few Words..
+1. 
 
 ###### Why I didn't use a well known ML approach?
 
