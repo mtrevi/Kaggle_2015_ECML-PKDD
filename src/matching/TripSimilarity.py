@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Trip Similarity contains a collection of similarity metrics 
-with the aim to evaluate the "distance" between two given trips.
-__source__ : 
 __author__ : Michele Trevisiol @trevi
+__description__ : Trip Similarity contains a collection of similarity approaches with the aim to measure the similarity between two given trips.
 """
 
 import sys

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-"""
-__source__ : 
+""" 
 __author__ : Michele Trevisiol @trevi
+__description__ : This is the class of the candidate destination that is returned within the framework.
 """
 
 import sys
@@ -22,9 +22,6 @@ class CandidateObj:
 
     """ Convert WGS84 in meters
     """
-    def isValid(self):
-        return True if self.higherDistance == 0 else False
-
     def serialize(self):
         output = 'slope: %.3f, wDir: %.3f, hDist: %.3f, avgMag: %.3f, cPoints: %.3f, noPj: %d, noPi: %d' \
         %(self.slope,self.wrongDirection,self.higherDistance,self.avgMagnitude,self.commPoints, self.noPj, self.noPi)

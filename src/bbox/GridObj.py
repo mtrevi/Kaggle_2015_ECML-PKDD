@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-__source__ : 
 __author__ : Michele Trevisiol @trevi
+__description__ : takes care of splitting the training coordinates into a grid with different cells of about ~$1km^2$.
 """
 
 import sys

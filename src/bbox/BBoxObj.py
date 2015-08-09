@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-__source__ : 
 __author__ : Michele Trevisiol @trevi
+__description__ : This class takes care of collecting the train routes coordinates to make them quickly accessible when looking for destination within a specific bounding box.
 """
 
 import sys

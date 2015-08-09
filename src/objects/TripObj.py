@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Trip object contains all the information of an individual trip. 
-__source__ : 
 __author__ : Michele Trevisiol @trevi
+__description__ : Trip object contains all the information of an individual trip. 
 """
 
 import sys

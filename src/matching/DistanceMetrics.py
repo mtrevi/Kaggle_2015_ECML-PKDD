@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Distance Metrics contains a collection of function to compute the distance between given points.
-__source__ : 
 __author__ : Michele Trevisiol @trevi
+__description__ : contains a collection of metrics to compute the distance between given points.
 """
 
 import sys

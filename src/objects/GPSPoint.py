@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-"""
-__source__ : 
+""" 
 __author__ : Michele Trevisiol @trevi
+__description__ : This class represent a GPS point with latitude and longitude and additional customizable functions.
 """
 
 import sys
