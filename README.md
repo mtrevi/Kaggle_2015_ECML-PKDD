@@ -44,10 +44,11 @@ Below the list of the parameters that can be set up when running the Framework. 
 - `(topn) TOPN` : **matching parameter**, number of top candidates to consider before applying the [MEDOID](https://en.wikipedia.org/wiki/Medoid) to select the final prediction.
 
 ###### Input/Output Parameters:
-parser.add_option( '--train', dest='trainFile', default='data/train.csv')
-parser.add_option( '--test', dest='testFile', default='data/test.csv')
-parser.add_option( '--bbox', dest='bboxFile', default='data/train.bbox.p')
-parser.add_option( '--grid', dest='gridFile', default='data/train.grid.p')
+- `--train` : define 
+- `--test` : define
+- `--out` : define
+- `--bbox` : define
+- `--grid` : define
 
 ###### Extra Parameters:
 - `-p` : define 
@@ -58,9 +59,8 @@ parser.add_option( '--grid', dest='gridFile', default='data/train.grid.p')
 The framework embeds also a way to evaluate the results using only the training set, following the standard approach of splitting the data into training and testing set. However, since it is not known how the real test set has been created (how many GPS points are removed? how long are the trips? how many edge cases are included? etc.) the framework picks a random subset of the data and remove from each trip the last `N` GPS points, where `N` may vary between 70% and 90%, saving the destination as a ground truth and considering all these cases as testing set.
 
 In order to evaluate the train set, the following parameter need to be specify when calling the framework:
-- `-d` 
-parser.add_option( '--split', dest='split', default=0.75)
-parser.add_option( '-d', action="store_true", dest="devel")
+- `-d` : define
+- `--split` : define
 
 
 
