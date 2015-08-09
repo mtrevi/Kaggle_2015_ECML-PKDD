@@ -47,11 +47,11 @@ Below the list of the parameters that can be set up when running the Framework. 
 - `--magnitude <int>` (MAGNITUDE) : **matching parameter**, number of last points to consider in order to compute the average distance between the test and the train trip.
 - `--topn <int>` (TOPN) : **matching parameter**, number of top candidates to consider before applying the [MEDOID](https://en.wikipedia.org/wiki/Medoid) to select the final prediction.
 
-Note that to choose the optimal values of the parameters describe before, multiple runs need to be tested. To make them quicker, all the parameters can read in input a list of possible values, such as: 
+Note that to choose the optimal values of the parameters describe before, multiple runs need to be tested. To make the multiple experiments quicker, all the parameters can read in input a list of possible values, such as: 
 ```
 [..] --max-airport-distance 1.5,2,2.5 --magnitude 2,3 [..]
 ```
-When a list is provided all the combinations among the values are tested. This will skip the initial (and time consuming step) of loading the training set.
+When a list is provided all the combinations among the values are tested. This trick allows to skip the initial (and time consuming) step of loading the training set—will be done only for the first setting.
 
 <!--  -->
 ##### Input/Output Parameters:
@@ -75,7 +75,9 @@ In order to evaluate the train set, the following parameter need to be specify w
 - `-d` : specifies that the run mode is 'devel', splitting the data into training and testing set and increasing the information plotted in the standard output/error.
 - `--split <float>` : defines the percentage of split for the training set. In general this value is aroung 75% (_i.e._, 75% of the routes will be part of the training set), however due to the huge amount of data, currently the test set is limited to a maximum of $500$ entries (to remove this limitation is extremely easy—just a couple of lines in the `runExperiment.py`).
 
-##### Example of multiple execution
+###### Example of multiple execution
+In order to execute everything on a single, and limited, machine such as a laptop, I recommend to take a sample of the train.csv. In the following example with 'train.1k.csv' I just toke the first $1000$ rows.
+
 ``` bash
 python runExperiments.py --train data/train.1k.csv --bbox data/train.1k.bbox.p --out train.1k-pred.mt.csv --max-airport-distance 2 --max-distance 1.5 --max-loop-distance 2 --max-var .5 --bbox-tolerance 0.05 --last_cells 0 --topn 4 --magnitude 2,4,5 -p --cpu 5 -d --split 0.75
 ```
@@ -89,6 +91,20 @@ train.1k-pred.mt.mad2.0_mdt1.5_mld2.0_mv0.5_bbt0.05_lc0_topn4_m5.csv
 
 
 ### Run Test Set Prediction
+To run the framework on the test set, the command is basically the same without the parameters `-d` and `--split`. 
+
+###### Example of multiple execution
+
+``` bash
+python runExperiments.py --train data/train.csv --bbox data/train.bbox.p --out test-pred.mt.csv --max-airport-distance 2 --max-distance 1.5 --max-loop-distance 2 --max-var .5 --bbox-tolerance 0.05 --last_cells 0 --topn 4 --magnitude 2,4,5 -p --cpu 5
+```
+
+that will generate the following output files:
+```
+test-pred.mt.mad2.0_mdt1.5_mld2.0_mv0.5_bbt0.05_lc0_topn4_m2.csv
+test-pred.mt.mad2.0_mdt1.5_mld2.0_mv0.5_bbt0.05_lc0_topn4_m4.csv
+test-pred.mt.mad2.0_mdt1.5_mld2.0_mv0.5_bbt0.05_lc0_topn4_m5.csv
+```
 
 
 <!--  -->
