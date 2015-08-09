@@ -84,12 +84,6 @@ line = 0
 trips = {}
 errCnt = 0
 emptyRoute = 0
-# if os.path.isfile(TRAINFILEP):
-#     st = time.time()
-#     print >> sys.stderr, 'Loading Train Data from %s' %TRAINFILEP
-#     trips = pickle.load( open(TRAINFILEP,"rb") )
-#     print >> sys.stderr, '\t loaded %d trips \t~%.2fs' %(len(trips),time.time()-st)
-# else:
 st = time.time()
 print >> sys.stderr, 'Loading train set from %s' %TRAINFILE
 with open(TRAINFILE, 'rb') as f:
@@ -113,8 +107,6 @@ with open(TRAINFILE, 'rb') as f:
             errCnt += 1
 print >> sys.stderr, '\t loaded %d trips (%d emptyRoute, %d errors) \t~%.2fs' \
 %(len(trips),emptyRoute,errCnt-1,time.time()-st)
-# print >> sys.stderr, '\t saving trips data to %s' %TRAINFILE
-# pickle.dump( trips, open(TRAINFILEP,"wb") )
 
 
 # ---------------- 

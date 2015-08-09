@@ -32,29 +32,42 @@ Below a brief description of each module of the framework:
 <!--  -->
 ## How to Run the Framework
 
+<!--  -->
 ### Parameters
-Below the list of the parameters that can be set up when running the Framework. Some of them are extremely sensible, and they might change significantly the quality of the final predictions.
+Below the list of the parameters that can be set up when running the Framework. Some of them are extremely sensible and they might change significantly the quality of the final predictions.
 
+<!--  -->
 ###### Parameters for tuning the framework
-- `(mad) MAX_AIRPORT_DIST` : **edge case threshold**, if the last available coordinate is closer than `mad` than the destination is set to be the airport —Porto's Airport Drop-off Area: ([41.237,-8.670](https://www.google.co.uk/maps/place/41%C2%B014'13.2%22N+8%C2%B040'12.0%22W/@41.237,-8.67,17z/data=!3m1!4b1!4m2!3m1!1s0x0:0x0)). Nb. This threshold is currently used also for the another _edge case_, the Porto Campanha Station (although I believe that these thresholds should be different).
-- `(mld) MAX_LOOP_DISTANCE` : **edge case threshold**, to face the cases in which the taxi driver *forget* to turn off the GPS signal after dropping off the passenger and it is driving back to the original position. This has been found to be quite common also by other participants (see [lebroschar](https://www.kaggle.com/c/pkdd-15-predict-taxi-service-trajectory-i/forums/t/15020/method-sharing) and [Rob0](https://www.kaggle.com/c/pkdd-15-predict-taxi-service-trajectory-i/forums/t/14994/how-to-get-top-10-with-a-non-ml-approach)'s approaches).
-- `(mdt) MAX_DIST_TOLERATE` : **filtering threshold**, this threshold filter out the final candidates that have a location too far away from the last observation of the test trip.
-- `(mv) MAX_VARIANCE` : **matching threshold**, this is used in the `slopeDistanceSim` similarity approach, basically it is the maximum accepted error when measuring the distance of two trips.
-- `(m) MAGNITUDE` : **matching parameter**, number of last points to consider in order to compute the average distance between the test and the train trip.
-- `(topn) TOPN` : **matching parameter**, number of top candidates to consider before applying the [MEDOID](https://en.wikipedia.org/wiki/Medoid) to select the final prediction.
+- `--max-airport-distance <float>` (MAX_AIRPORT_DIST) : **edge case threshold**, if the last available coordinate is closer than `MAX_AIRPORT_DIST` than the destination is set to be the airport —Porto's Airport Drop-off Area: ([41.237,-8.670](https://www.google.co.uk/maps/place/41%C2%B014'13.2%22N+8%C2%B040'12.0%22W/@41.237,-8.67,17z/data=!3m1!4b1!4m2!3m1!1s0x0:0x0)). Nb. This threshold is currently used also for the another _edge case_, the Porto Campanha Station (although I believe that these thresholds should be different).
+- `--max-loop-distance <float>` (MAX_LOOP_DISTANCE) : **edge case threshold**, to face the cases in which the taxi driver *forget* to turn off the GPS signal after dropping off the passenger and it is driving back to the original position. This has been found to be quite common also by other participants (see [lebroschar](https://www.kaggle.com/c/pkdd-15-predict-taxi-service-trajectory-i/forums/t/15020/method-sharing) and [Rob0](https://www.kaggle.com/c/pkdd-15-predict-taxi-service-trajectory-i/forums/t/14994/how-to-get-top-10-with-a-non-ml-approach)'s approaches).
+- `--last_cells <int>` (LAST_CELLS) : **edge case threshold**, this is an alternative approach quite time consuming that is currently used only for the cases in which there are not enough candidates ($<TOPN$). This threshold set the number of cells from which extract additional training routes.
+- `--bbox-tolerance <float>` (BBOX_TOLERANCE) : **filtering offset**, this value extend the boundaries for the selection of training routes that will be compare with the test route.
+- `--max-distance <float>` (MAX_DIST_TOLERATE) : **filtering threshold**, this threshold filter out the final candidates that have a location too far away from the last observation of the test trip.
+- `--max-var <float>` (MAX_VARIANCE) : **matching threshold**, this is used in the `slopeDistanceSim` similarity approach, basically it is the maximum accepted error when measuring the distance of two trips.
+- `--magnitude <int>` (MAGNITUDE) : **matching parameter**, number of last points to consider in order to compute the average distance between the test and the train trip.
+- `--topn <int>` (TOPN) : **matching parameter**, number of top candidates to consider before applying the [MEDOID](https://en.wikipedia.org/wiki/Medoid) to select the final prediction.
 
+Note that to choose the optimal values of the parameters describe before, multiple runs need to be tested. To make them quicker, all the parameters can read in input a list of possible values, such as: 
+```
+[..] --max-airport-distance 1.5,2,2.5 --magnitude 2,3 [..]
+```
+When a list is provided all the combinations among the values are tested. This will skip the initial (and time consuming step) of loading the training set.
+
+<!--  -->
 ###### Input/Output Parameters:
-- `--train` : define 
-- `--test` : define
-- `--out` : define
-- `--bbox` : define
-- `--grid` : define
+- `--train <string>` : path of the train file (default: 'data/train.csv').
+- `--test <string>` : path of the test file (default: 'data/test.csv').
+- `--out <string>` : path of the output file respecting the format of the official submission ('TRIP_ID,LATITUDE,LONGITUDE').
+- `--bbox <string>` : path of the bbox file, since this needs to be computed once, if the file is not present the bbox will be computed and store in `pickle format` (default: 'data/train.bbox.p').
+- `--grid <string>` : path of the bbox file, same as the bbox, if the file is not found it is calculated otherwise it is loaded from the pickle file (default: 'data/train.grid.p'). 
 
+<!--  -->
 ###### Extra Parameters:
-- `-p` : define 
-- `--cpu` : define 
+- `-p` : run the Framework in parallel exploiting the 'joblib' and 'multiprocessing' packages. Note that the train, the bbox and the grid data are shared in memory, but then each tread needs to deal with the list of candidates that might be quite havy as well. 
+- `--cpu <int>` : if the previous parameter is specified, this one set the number of CPU for the parallel computation. If this is unset by default the number of CPU is the total number of available CPUs minus 9 (to avoid memory issues).
 
 
+<!--  -->
 ### Run Prediction within the Train Set
 The framework embeds also a way to evaluate the results using only the training set, following the standard approach of splitting the data into training and testing set. However, since it is not known how the real test set has been created (how many GPS points are removed? how long are the trips? how many edge cases are included? etc.) the framework picks a random subset of the data and remove from each trip the last `N` GPS points, where `N` may vary between 70% and 90%, saving the destination as a ground truth and considering all these cases as testing set.
 
