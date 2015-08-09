@@ -216,10 +216,10 @@ def predictDestination(n, ttestId):
     portoCampanha_last_d = getGPSDistance(ttest.route[-1], portoCampanha)
     portoCampanha_first_d = getGPSDistance(ttest.route[0], portoCampanha)
     # if the trip has only one point (near the airport) recommend citycenter
-    if len(ttest.route) == 1 and airport_first_d < MAX_AIRPORT_DIST:
-        candDest = portoCenter
-        method = 'fromAIRPORT'
-    elif airport_last_d <= MAX_AIRPORT_DIST and airport_first_d > airport_last_d:
+    # if len(ttest.route) == 1 and airport_first_d < MAX_AIRPORT_DIST:
+    #     candDest = portoCenter
+    #     method = 'fromAIRPORT'
+    if airport_last_d <= MAX_AIRPORT_DIST and airport_first_d > airport_last_d:
         candDest = airport
         method = 'toAIRPORT'
     elif portoCampanha_last_d <= (MAX_AIRPORT_DIST-1) and portoCampanha_first_d > portoCampanha_last_d:

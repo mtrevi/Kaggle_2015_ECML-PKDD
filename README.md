@@ -109,10 +109,12 @@ test-pred.mt.mad2.0_mdt1.5_mld2.0_mv0.5_bbt0.05_lc0_topn4_m5.csv
 
 <!--  -->
 ## How did I Tackle the Problem 
-I am going to try to explain in a simple manner how did I face the challenge, trying to make all the steps understandable.
+I am going to explain in a simple manner how did I face the challenge. Apologize in advance if some of the steps are not well explained, without a whiteboard or a piece of paper this did not result to be an easy task. :)
 
 ### The Framework Explained in Few Words..
-1. 
+1. Consider the **edge cases**. First checking if the last point is close enough to the _Airport_ or to the _Campanha Station_ and in case set them as predicted destination. Second, checking if the driver forget to turn off the GPS and the taxi is going back to the startin point, and in case set the starting point as predicted destination.
+2. Select the **candidate area/bbox**. The idea is to drastically reduce the number of train routes to consider for the comparison, by selecting only the route the end within the area in which the test route is going. To do so, I toke the last coordinates of the test route, I divide the map in four parts, I find which is the area where there are more GPS points and I select the opposite one as the more likely to contain the final destination. In order to consider the cases in which the taxi is perfectly driving toward one of the cardinal point (North, South, West, East), I enlarge the final area by the value specified with the parameter `--bbox-tolerance`. Selecting a large value significantly decrease the probability of missing the final destination but still reducing the number of training routes to consider.
+3. Given the area (or bbox) I pick all the train routes that end in that area, and I start the comparison with the test route. 
 
 ###### Why I didn't use a well known ML approach?
 
