@@ -203,14 +203,11 @@ if DEVEL:
 
 
 # ---------------- 
-# Run NN and prediction of destination
+# Run NN and destination prediction
 def predictDestination(n, ttestId):
     st = time.time()
     ttest = trips[ttestId]
     method = 'matching'
-    # Find BBox and get only routes that end in that BBox
-    area, lat, lng = findDestinationBBox(ttest, tolerance=BBOX_TOLERANCE)
-    trainCandidatesIds = BBox.getCandidatesIds(area, lat, lng)
     # 
     # edge cases
     candDest = None
@@ -238,6 +235,10 @@ def predictDestination(n, ttestId):
         if d_0_last0 <= d_0_last1 and d_0_last0 <= d_0_last2 and d_0_last0 <= MAX_LOOP_DIST and d_0_last0 < d_mid_last0:
             candDest = ttest.route[0]
             method = 'LOOP'
+    #
+    # Find BBox and get only routes that end in that BBox
+    area, lat, lng = findDestinationBBox(ttest, tolerance=BBOX_TOLERANCE)
+    trainCandidatesIds = BBox.getCandidatesIds(area, lat, lng)
     #
     candidates = {} # score -> ttrain
     if candDest is None:
