@@ -5,4 +5,15 @@
 
 
 <h2>How to run</h2>
-<h3>Run and evaluate within the train set</h3>
+
+<h3>Run Prediction within the Train Set</h3>
+
+<h3>Run Test Set Prediction</h3>
+
+<h3>Parameters</h3>
+
+
+<h2>Code Structure</h2>
+
+<h2>Next Delevopment</h2>
+
