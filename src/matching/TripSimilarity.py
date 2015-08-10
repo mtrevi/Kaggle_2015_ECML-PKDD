@@ -48,7 +48,6 @@ def findOverlapingPath(route1, route2, MAX_VAR, distFunc, MAGNITUDE):
         if higherDistance > 0:
             break
         distPP.append( [i, pi, j, pj, d] )
-        # print i, j, d
     # print 'wrongDirectionAlert:', wrongDirectionAlert
     # compute avg magnitude of last two distances
     avgMagnitude = 0.0
@@ -121,7 +120,5 @@ def slopeDistanceSim(route1, route2, MAX_VAR=.5, MAGNITUDE=3, distFunc='haversin
     newCandidate.noPj = len(uniquePj)
     newCandidate.noPi = len(route1)
     newCandidate.commPoints = commPoints
-    # print slope, intercept, len(uniquePj), len(route1), commPoints
-    # sys.exit()
     # 
     return newCandidate

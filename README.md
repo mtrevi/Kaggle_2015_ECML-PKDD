@@ -147,7 +147,7 @@ Below a list of developments/improvements that I had in mind but that I couldn't
 - **Change the ranking function** : currently I am using the average distance of the last `M` (magnitude) common points between the test and the train trip. It has been showed to work nicely but there might be much better metric that can improve the final prediction.
 - **Introduce a Machine Learning Approach** : I believe that the current framework is quite interesting (the best results are ranked #71 on the Private Leaderboard with less than a week of work), but it has surely some weakness:
     - *Computational time*: this might be a limitation especially when the parameters need to be tuned (although in the current challenge a validation set was not provided). The bottleneck was the huge amount of training data that is selected for the comparison, an issue that we tackled adding more filtering techniques that, however, might also remove some True Positive. It does not mean that the ML approaches might work faster, actually usually they tend to be slow with the size of the given training set, however they are very well supported with many implementations that easily work in multithreading or directly on clusters/grids (_e.g._, Spark or Mahout/Hadoop).
-    - *Direction of the route*.
+    - *Direction of the route*. 
 
 ###### Experimental
 - **Applying alternative distance metric** : replacing _haversine distance_ with _google maps distance_. Since the latter one is significantly heavier computational speaking (it needs to perform a request through the google API) it can still replace the former one at least in the most sensible cases.

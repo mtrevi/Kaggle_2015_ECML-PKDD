@@ -13,7 +13,9 @@ import random
 import operator
 import cPickle as pickle
 from optparse import OptionParser
-# multithreading
+# multithreading done with:
+# https://pythonhosted.org/joblib/parallel.html
+# http://glowingpython.blogspot.co.uk/2014/05/code-parallelization-with-joblib.html
 from joblib import Parallel, delayed
 import multiprocessing
 # custom dependences
@@ -32,8 +34,7 @@ parser.add_option( '--grid', dest='gridFile', default='data/train.grid.p')
 parser.add_option( '--out', dest='outFile', default='data/test.pred.csv')
 parser.add_option( '--split', dest='split', default=0.75)
 parser.add_option( '-d', action="store_true", dest="devel")
-parser.add_option( '-p', action="store_true", dest="parallel")
-parser.add_option( '--cpu', dest="cpus")
+parser.add_option( '--cpu', dest="cpus", default=1)
 # parameters
 parser.add_option( '--max-airport-distance', dest='maxAirportDist', default='3.')
 parser.add_option( '--max-distance', dest='maxDistTolerate', default='2.')
@@ -54,11 +55,7 @@ BBOXFile = options.bboxFile
 GRIDFile = options.gridFile
 SPLIT = float(options.split)
 DEVEL = options.devel
-PARALLEL = options.parallel
-if options.cpus is not None:
-    NCPU = int(options.cpus)
-else:
-    NCPU = max(multiprocessing.cpu_count()-9,4)
+NCPU = int(options.cpus)
 l_MAX_AIRPORT_DIST = [float(i) for i in options.maxAirportDist.strip().split(',')]
 l_MAX_DIST_TOLERATE = [float(i) for i in options.maxDistTolerate.strip().split(',')]
 l_MAX_LOOP_DIST = [float(i) for i in options.maxLoopDist.strip().split(',')]
@@ -93,8 +90,6 @@ with open(TRAINFILE, 'rb') as f:
         try:
             trip = TripObj(row)
             # remove 1 length route
-            # if DEVEL and len(trip.route) < 3:
-            #     continue
             if trip.destination is not None:
                 trips[trip.id] = trip
             else:
@@ -225,7 +220,7 @@ def predictDestination(n, ttestId):
     elif portoCampanha_last_d <= (MAX_AIRPORT_DIST-1) and portoCampanha_first_d > portoCampanha_last_d:
         candDest = portoCampanha
         method = 'toPORTOCAMPANHA'
-    # if cab forgot to turn off the GPS and it's coming back: recommend first location
+    # if cab forgot to turn off the GPS and is coming back: recommend first location
     if len(ttest.route) > 4:
         mid_point = ttest.route[len(ttest.route)/2]
         d_mid_last0 = getGPSDistance(mid_point,ttest.route[-1])
@@ -324,9 +319,8 @@ def predictDestination(n, ttestId):
 
 
 
-# Parallel Settings
-# https://pythonhosted.org/joblib/parallel.html
-# http://glowingpython.blogspot.co.uk/2014/05/code-parallelization-with-joblib.html
+""" This part of the code is extremely hugly I know. However it is just a quick trick to perform multiple experiments with different parameters without re-loading the training set each time.
+"""
 for MAX_AIRPORT_DIST in l_MAX_AIRPORT_DIST:
     for MAX_DIST_TOLERATE in l_MAX_DIST_TOLERATE:
         for MAX_LOOP_DIST in l_MAX_LOOP_DIST:
@@ -337,109 +331,29 @@ for MAX_AIRPORT_DIST in l_MAX_AIRPORT_DIST:
                             for MAGNITUDE in l_MAGNITUDE:
                                 SUFFIX = 'mad%.1f_mdt%.1f_mld%.1f_mv%.1f_bbt%.2f_lc%d_topn%d_m%d' %(MAX_AIRPORT_DIST,MAX_DIST_TOLERATE,MAX_LOOP_DIST,MAX_VARIANCE,BBOX_TOLERANCE,LAST_CELLS,TOPN,MAGNITUDE)
                                 OUTFILE = options.outFile.replace('csv','%s.csv'%SUFFIX)
-                                if PARALLEL:
-                                    # Main Loop
-                                    stTot = time.time()
-                                    print >> sys.stderr, 'Parsing test trips...'
-                                    testError = []
-                                    outResults = open( OUTFILE, 'w+' )
-                                    outResults.write('TRIP_ID,LATITUDE,LONGITUDE\n')
-                                    #
-                                    parallelizer = Parallel(n_jobs=NCPU)
-                                    tasks_iterator = ( delayed(predictDestination)(i,testIds[i]) for i in range(0,len(testIds)) )
-                                    allPred = parallelizer( tasks_iterator )
-                                    for line in allPred:
-                                        outResults.write('%s\n' %line.strip())
-                                        if DEVEL:
-                                            b = line.split(',')
-                                            tId = b[0].replace('"','')
-                                            lat = float(b[1])
-                                            lng = float(b[2])
-                                            predDest = GPSPoint([lat,lng])
-                                            gtErr = haversineDist(trips[tId].destination, predDest)
-                                            testError.append(gtErr)
-                                    # print allPred
+                                # Main Loop
+                                stTot = time.time()
+                                print >> sys.stderr, 'Parsing test trips...'
+                                testError = []
+                                outResults = open( OUTFILE, 'w+' )
+                                outResults.write('TRIP_ID,LATITUDE,LONGITUDE\n')
+                                #
+                                parallelizer = Parallel(n_jobs=NCPU)
+                                tasks_iterator = ( delayed(predictDestination)(i,testIds[i]) for i in range(0,len(testIds)) )
+                                allPred = parallelizer( tasks_iterator )
+                                for line in allPred:
+                                    outResults.write('%s\n' %line.strip())
                                     if DEVEL:
-                                        print >> sys.stderr, 'avgError: %f' %np.mean(testError)
-                                    print >> sys.stderr, 'Computational Time ~%.2f seconds' %(time.time()-stTot)
-                                    outResults.flush()
-                                    outResults.close()
-                                else:
-                                    # ---------------- 
-                                    # Run NN and prediction of destination
-                                    # TODO : instead of comparing with each individual train_route, group them before by ending point
-                                    # TODO : when the points are going forther that the last destination, just compute a regression line and set a point not too far (estimate the missing points ~10-20% and their total distance)
-                                    stTot = time.time()
-                                    print >> sys.stderr, 'Parsing test trips...'
-                                    testError = []
-                                    n = 0
-                                    noTESTS = len(testIds)
-                                    outResults = open( OUTFILE, 'w+' )
-                                    outResults.write('TRIP_ID,LATITUDE,LONGITUDE\n')
-                                    for ttestId in testIds:
-                                        st = time.time()
-                                        ttest = trips[ttestId]
-                                        n += 1
-                                        print >> sys.stderr, '[%s] Id:' %n, ttest.id,
-                                        # Find BBox and get only routes that end in that BBox
-                                        area, lat, lng = findDestinationBBox(ttest, tolerance=True)
-                                        trainCandidatesIds = BBox.getCandidatesIds(area, lat, lng)
-                                        #
-                                        candidates = {} # score -> ttrain
-                                        for ttrainId in trainCandidatesIds:
-                                            ttrain = trips[ttrainId]
-                                            C = slopeDistanceSim(ttest.route, ttrain.route, MAX_VARIANCE, MAGNITUDE)
-                                            noCommP = float(C.noPj)/C.noPi
-                                            if C.wrongDirection > .4 or C.commPoints < .1 or C.slope >= 0:
-                                                continue
-                                            # if trainTrip.destination is too far from last point of testTrip, skip it
-                                            candDist = haversineDist(ttest.route[-1], ttrain.destination)
-                                            if candDist > MAX_DIST_TOLERATE:
-                                                continue
-                                            # save candidate
-                                            candidates[C.avgMagnitude] = [ttrain, C]
-                                            # ttest.printRoute()
-                                            # ttrain.printRoute()
-                                            # print ttest.id, ttrain.id, d
-                                        # if no candidates
-                                        if len(candidates) == 0:
-                                            'TODO'
-                                            candDest = ttest.route[-1]
-                                            if DEVEL:
-                                                gtErr = haversineDist(ttest.destination, candDest)
-                                                testError.append(gtErr)
-                                                print >> sys.stderr, '\t curError: %f totError: %f \t(%d/%d trainCand) ~%.2fs %s' \
-                                                %(gtErr, np.mean(testError),len(candidates),len(trainCandidatesIds),time.time()-st,'NO CANDIDATES')
-                                                continue
-                                        else:
-                                            # get smallest scores
-                                            candDest = candidates[sorted(candidates)[0]][0].destination
-                                            if DEVEL:
-                                                gtErr = haversineDist(ttest.destination, candDest)
-                                                testError.append(gtErr)
-                                        if DEVEL:
-                                            # print stats
-                                            topn = 0
-                                            for score in sorted(candidates):
-                                                #
-                                                gtErr = haversineDist(ttest.destination, candidates[score][0].destination)
-                                                if topn > 0:
-                                                    print >> sys.stderr, "score: %f, %s, finalDist: %f" \
-                                                    %(score, candidates[score][1].serialize(), gtErr)
-                                                    topn -= 1
-                                                if topn <= 0:
-                                                    break
-                                            # print stats
-                                            print >> sys.stderr, '\t curError: %f totError: %f \t(%d/%d trainCand) ~%.2fs' \
-                                            %(gtErr, np.mean(testError),len(candidates),len(trainCandidatesIds),time.time()-st)
-                                            #
-                                            if n >= noTESTS:
-                                                break
-                                        else:
-                                            outResults.write('"%s",%f,%f\n' %(ttest.id, candDest.lat, candDest.lng))
-                                            print >> sys.stderr, '(%f,%f)' %(candDest.lat, candDest.lng)
-                                            outResults.flush()
-                                    if DEVEL:
-                                        print >> sys.stderr, 'Tested %d trips, %d with estimation (error: %f) and %d missed \t~%.2fs' \
-                                        %(noTESTS, len(testError), np.mean(testError), noTESTS-len(testError), time.time()-stTot)
-                                    outResults.close()
+                                        b = line.split(',')
+                                        tId = b[0].replace('"','')
+                                        lat = float(b[1])
+                                        lng = float(b[2])
+                                        predDest = GPSPoint([lat,lng])
+                                        gtErr = haversineDist(trips[tId].destination, predDest)
+                                        testError.append(gtErr)
+                                # print allPred
+                                if DEVEL:
+                                    print >> sys.stderr, 'avgError: %f' %np.mean(testError)
+                                print >> sys.stderr, 'Computational Time ~%.2f seconds' %(time.time()-stTot)
+                                outResults.flush()
+                                outResults.close()
