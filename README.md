@@ -81,7 +81,7 @@ In order to evaluate the train set, the following parameter need to be specify w
 In order to execute everything on a single, and limited, machine such as a laptop, I recommend to take a sample of the train.csv. In the following example with 'train.1k.csv' I just toke the first $1000$ rows, you can use it since it has been uploaded in the `data` folder.
 
 ``` bash
-python runExperiments.py --train data/train.1k.csv --bbox data/train.1k.bbox.p --out train.1k-pred.mt.csv --max-airport-distance 2 --max-distance 1.5 --max-loop-distance 2 --max-var .5 --bbox-tolerance 0.05 --last_cells 0 --topn 4 --magnitude 2,4,5 -p --cpu 5 -d --split 0.75
+python runExperiments.py --train data/train.1k.csv --bbox data/train.1k.bbox.p --out train.1k-pred.mt.csv --max-airport-distance 2 --max-distance 1.5 --max-loop-distance 0.8 --max-var 0.3 --bbox-tolerance 0.01 --last_cells 0 --topn 4 --magnitude 3,4,5 --cpu 5 -d --split 0.75
 ```
 
 that will generate the following output files:
@@ -98,7 +98,7 @@ To run the framework on the test set, the command is basically the same without 
 ###### Example of multiple execution
 
 ``` bash
-python runExperiments.py --train data/train.csv --bbox data/train.bbox.p --out test-pred.mt.csv --max-airport-distance 2 --max-distance 1.5 --max-loop-distance 2 --max-var .5 --bbox-tolerance 0.05 --last_cells 0 --topn 4 --magnitude 2,4,5 -p --cpu 5
+python runExperiments.py --train data/train.csv --bbox data/train.bbox.p --out test-pred.mt.csv --max-airport-distance 2 --max-distance 1.5 --max-loop-distance 0.8 --max-var 0.3 --bbox-tolerance 0.01 --last_cells 0 --topn 4 --magnitude 3,4,5 --cpu 5
 ```
 
 that will generate the following output files:

@@ -1,1 +1,8 @@
-python runExperiments.py --train data/train.1k.csv --bbox data/train.1k.bbox.p --out test.1k-pred.mt.csv --max-airport-distance 2 --max-distance 1.5 --max-loop-distance 2 --max-var .5 --bbox-tolerance 0.05 --last_cells 0 --topn 4 --magnitude 4 -d --cpu 4
+## Simple Execution (Train(1k)/Validation):
+python runExperiments.py --train data/train.1k.csv --bbox data/train.1k.bbox.p --out train.1k-pred.mt.csv --cpu 4 -d
+
+## Simple Execution (Train(1k)/Test):
+python runExperiments.py --train data/train.1k.csv --bbox data/train.1k.bbox.p --out test.1k-pred.mt.csv --cpu 4
+
+## To change the parameters please check the README.md, an example of execution could be the following:
+python runExperiments.py --train data/train.1k.csv --bbox data/train.1k.bbox.p --out train.1k-pred.mt.csv --max-airport-distance 2 --max-distance 1.5 --max-loop-distance 0.8 --max-var 0.3 --bbox-tolerance 0.01 --last_cells 0 --topn 4 --magnitude 3 --cpu 4 -d 
