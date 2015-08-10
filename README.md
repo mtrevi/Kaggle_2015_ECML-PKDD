@@ -27,6 +27,8 @@ Below a brief description of each module of the framework:
 - `src/matching` : 
     - `DistanceMetrics.py` : contains a collection of metrics to compute the distance between given points.
     - `TripSimilarity.py` : contains a collection of similarity approaches with the aim to measure the similarity between two given trips.
+- `data` : contains some example of the dataset in order to being able to immediately try the framework.
+- `runBaseline.py` : contains a simple baseline which returns the last known location for each test route. With surprised I have noted that this is actually working quite well. :)
 
 
 <!--  -->
@@ -76,7 +78,7 @@ In order to evaluate the train set, the following parameter need to be specify w
 - `--split <float>` : defines the percentage of split for the training set. In general this value is aroung 75% (_i.e._, 75% of the routes will be part of the training set), however due to the huge amount of data, currently the test set is limited to a maximum of $500$ entries (to remove this limitation is extremely easy—just a couple of lines in the `runExperiment.py`).
 
 ###### Example of multiple execution
-In order to execute everything on a single, and limited, machine such as a laptop, I recommend to take a sample of the train.csv. In the following example with 'train.1k.csv' I just toke the first $1000$ rows.
+In order to execute everything on a single, and limited, machine such as a laptop, I recommend to take a sample of the train.csv. In the following example with 'train.1k.csv' I just toke the first $1000$ rows, you can use it since it has been uploaded in the `data` folder.
 
 ``` bash
 python runExperiments.py --train data/train.1k.csv --bbox data/train.1k.bbox.p --out train.1k-pred.mt.csv --max-airport-distance 2 --max-distance 1.5 --max-loop-distance 2 --max-var .5 --bbox-tolerance 0.05 --last_cells 0 --topn 4 --magnitude 2,4,5 -p --cpu 5 -d --split 0.75
@@ -130,7 +132,7 @@ I am going to explain in a simple manner how did I face the challenge. Apologize
 7. Well this is it. :)
 
 ###### Why I didn't use a well known ML approach?
-
+Well, fair question. The short answer is because the available time and my situation. One week in which I was traveling a lot, and in which I did not know in advance how much I was going to be in an environment that allowed me to work, it was something that I had to take into account. I thought that starting with a simpler approach could guarantee to have some sort of running framework that can achieve some acceptable results. However, I found on the way more issues that I was expecting ("the loop case", the unknown length of the routes, etc.) and therefore I've tried to optimize the approach. I've reached the position #71 in the Private Leaderboard that I still consider an acceptable result, but for sure with lot of room for improvement.
 
 
 <!--  -->
