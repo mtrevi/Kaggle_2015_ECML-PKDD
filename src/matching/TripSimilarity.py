@@ -109,7 +109,10 @@ def slopeDistanceSim(route1, route2, MAX_VAR=.5, MAGNITUDE=3, distFunc='haversin
         x.append(i)
         y.append(distPP[i][4])
         uniquePj.add(distPP[i][2])
-    slope, intercept, r_value, p_value, std_err = stats.linregress(x,y)
+    try:
+        slope, intercept, r_value, p_value, std_err = stats.linregress(x,y)
+    except:
+        slope = -0.001
     # get common points once the firt pj is changing
     commPoints = getCommPoints(distPP)
     # normalize the alerts

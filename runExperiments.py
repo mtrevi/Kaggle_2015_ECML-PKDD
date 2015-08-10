@@ -36,14 +36,14 @@ parser.add_option( '--split', dest='split', default=0.75)
 parser.add_option( '-d', action="store_true", dest="devel")
 parser.add_option( '--cpu', dest="Ncpu", default=1)
 # parameters
-parser.add_option( '--max-airport-distance', dest='maxAirportDist', default='3.')
-parser.add_option( '--max-distance', dest='maxDistTolerate', default='2.')
-parser.add_option( '--max-loop-distance', dest='maxLoopDist', default='2.')
+parser.add_option( '--max-airport-distance', dest='maxAirportDist', default='2.0')
+parser.add_option( '--max-distance', dest='maxDistTolerate', default='1.5')
+parser.add_option( '--max-loop-distance', dest='maxLoopDist', default='0.8')
 parser.add_option( '--max-var', dest='maxVariance', default='.3')
 parser.add_option( '--bbox-tolerance', dest='bboxTolerance', default='.01')
-parser.add_option( '--magnitude', dest='magnitude', default='4.')
-parser.add_option( '--last_cells', dest='lastCells', default='3')
-parser.add_option( '--topn', dest='topN', default='5')
+parser.add_option( '--magnitude', dest='magnitude', default='3')
+parser.add_option( '--last_cells', dest='lastCells', default='0')
+parser.add_option( '--topn', dest='topN', default='4')
 
 # ---------------- 
 # Load Parameters
