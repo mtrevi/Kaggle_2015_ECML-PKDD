@@ -56,9 +56,9 @@ def findOverlapingPath(route1, route2, MAX_VAR, distFunc, MAGNITUDE):
             avgMagnitude = np.mean( [distPP[-1][4],distPP[-2][4]] )
         elif MAGNITUDE == 3:
             avgMagnitude = np.mean( [distPP[-1][4],distPP[-2][4],distPP[-3][4]] )
-        elif MAGNITUDE == 4:
+        elif MAGNITUDE == 4 and len(distPP) >= 4:
             avgMagnitude = np.mean( [distPP[-1][4],distPP[-2][4],distPP[-3][4],distPP[-4][4]] )
-        elif MAGNITUDE >= 5:
+        elif MAGNITUDE >= 5 and len(distPP) >= 4:
             avgMagnitude = np.mean( [distPP[-1][4],distPP[-2][4],distPP[-3][4],distPP[-4][4],distPP[-5][4]] )
     # 
     return distPP, wrongDirection, higherDistance, avgMagnitude
