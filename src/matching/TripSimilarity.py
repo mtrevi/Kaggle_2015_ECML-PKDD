@@ -50,7 +50,7 @@ def findOverlapingPath(route1, route2, MAX_VAR, distFunc, MAGNITUDE):
         distPP.append( [i, pi, j, pj, d] )
         # print i, j, d
     # print 'wrongDirectionAlert:', wrongDirectionAlert
-    # compute avg magniture of last two distances
+    # compute avg magnitude of last two distances
     avgMagnitude = 0.0
     if len(distPP) > 2:
         if MAGNITUDE == 2:
