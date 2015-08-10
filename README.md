@@ -1,6 +1,6 @@
 # Kaggle | 2015 ECML-PKDD
 This repo contains the code I've implemented for the ECML-PKDD challenge, an extremely interesting and very challenging competition.
-The work has been done for less than a week, in the meanwhile I was traveling among 3 different countries and 2 continents (Barcelona/Spain, London/UK, Santiago/Chile) between August 2 and August 9 of this 2015.
+The work has been done for less than a week, in the meanwhile I was traveling among 3 different countries and 2 continents (Barcelona/Spain, London/UK, Santiago/Chile) between August 2 and August 9 of this 2015. Crazy experience but for a good reason.
 
 
 <!--  -->
