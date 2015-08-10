@@ -1,0 +1,1 @@
+python runExperiments.py --train data/train.1k.csv --bbox data/train.1k.bbox.p --out test.1k-pred.mt.csv --max-airport-distance 2 --max-distance 1.5 --max-loop-distance 2 --max-var .5 --bbox-tolerance 0.05 --last_cells 0 --topn 4 --magnitude 4 -d --cpu 4
