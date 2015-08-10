@@ -34,7 +34,7 @@ parser.add_option( '--grid', dest='gridFile', default='data/train.grid.p')
 parser.add_option( '--out', dest='outFile', default='data/test.pred.csv')
 parser.add_option( '--split', dest='split', default=0.75)
 parser.add_option( '-d', action="store_true", dest="devel")
-parser.add_option( '--cpu', dest="cpus", default=1)
+parser.add_option( '--cpu', dest="Ncpu", default=1)
 # parameters
 parser.add_option( '--max-airport-distance', dest='maxAirportDist', default='3.')
 parser.add_option( '--max-distance', dest='maxDistTolerate', default='2.')
@@ -55,7 +55,7 @@ BBOXFile = options.bboxFile
 GRIDFile = options.gridFile
 SPLIT = float(options.split)
 DEVEL = options.devel
-NCPU = int(options.cpus)
+NCPU = int(options.Ncpu)
 l_MAX_AIRPORT_DIST = [float(i) for i in options.maxAirportDist.strip().split(',')]
 l_MAX_DIST_TOLERATE = [float(i) for i in options.maxDistTolerate.strip().split(',')]
 l_MAX_LOOP_DIST = [float(i) for i in options.maxLoopDist.strip().split(',')]
