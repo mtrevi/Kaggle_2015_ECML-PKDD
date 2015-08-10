@@ -214,7 +214,7 @@ def predictDestination(n, ttestId):
     # if len(ttest.route) == 1 and airport_first_d < MAX_AIRPORT_DIST:
     #     candDest = portoCenter
     #     method = 'fromAIRPORT'
-    if airport_last_d <= MAX_AIRPORT_DIST and airport_first_d > airport_last_d:
+    if airport_last_d <= MAX_AIRPORT_DIST and airport_first_d > airport_last_d-0.3:
         candDest = airport
         method = 'toAIRPORT'
     elif portoCampanha_last_d <= (MAX_AIRPORT_DIST-1) and portoCampanha_first_d > portoCampanha_last_d:
